@@ -1,0 +1,44 @@
+name:           bb
+version:        0.0.0.1
+category:       Finance
+author:         Miezhiko
+license:        GPLv3
+build-type:     Simple
+cabal-version:  2.0
+
+executable bb
+  main-is: Main.hs
+  other-modules:
+    Paths_bb
+    Version
+    Types
+    Config
+    Futures
+  hs-source-dirs:
+    src
+  default-extensions:
+    CPP
+    LambdaCase
+    MultiWayIf
+    UnicodeSyntax
+    DataKinds
+    OverloadedLabels
+    OverloadedStrings
+    ViewPatterns
+    DeriveGeneric
+  build-depends:
+      base
+    , base-unicode-symbols
+    , aeson
+    , yaml
+    , filepath
+    , directory
+    , websockets
+    , wuss
+    , mtl
+    , network
+    , text
+    , neat-interpolation
+  default-language: Haskell2010
+  ghc-options:
+    -Wall -threaded -rtsopts -with-rtsopts=-N
