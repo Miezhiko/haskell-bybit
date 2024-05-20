@@ -6,6 +6,8 @@ module Futures
   ( go
   ) where
 
+import           Prelude.Unicode
+
 import           Config
 
 import           Wuss
@@ -54,7 +56,7 @@ ws ∷ ClientApp ()
 ws connection = do
   putStrLn "Connected!"
 
-  void . forkIO . forever $ do
+  void ∘ forkIO ∘ forever $ do
     message <- receiveData connection
     let jsonData = decode message :: Maybe JsonData
     case jsonData of
