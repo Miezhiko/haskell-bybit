@@ -65,8 +65,7 @@ ws connection = do
           Just (ss, p) ->
             TIO.putStrLn $ T.concat [ss, ": ", p]
           Nothing      -> pure ()
-      Nothing -> pure () -- putStrLn "Failed to parse JSON"
-    -- print (message :: Text)
+      Nothing -> pure ()
 
   let subText = [text|
 {
@@ -87,7 +86,7 @@ ws connection = do
               loop
   loop
 
-  sendClose connection (T.pack "Bye!")
+  sendClose connection (T.pack "connection closed")
 
 go ∷ Conf -> IO ()
 go _cfg = do
