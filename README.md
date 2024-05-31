@@ -16,7 +16,6 @@ cfgSecret: yourBBsecretKeyItsUsuallyLonger
 
 ```haskell
 void ∘ forkIO ∘ forever $ do
-  threadDelay 100000
   message <- receiveData connection
   let jsonData = decode message :: Maybe OrderData
   case jsonData of

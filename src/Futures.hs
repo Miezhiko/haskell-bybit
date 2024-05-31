@@ -15,7 +15,7 @@ import           Types
 
 import           Wuss
 
-import           Control.Concurrent         (forkIO, threadDelay)
+import           Control.Concurrent         (forkIO)
 import           Control.Lens               ((.~), (^.))
 import           Control.Monad              (forever, void)
 import           Control.Monad.State        (modify)
@@ -78,7 +78,6 @@ ws connection = do
   chan <- BCh.newBChan 100
 
   void ∘ forkIO ∘ forever $ do
-    threadDelay 100000
     message <- receiveData connection
     let jsonData = decode message :: Maybe OrderData
     case jsonData of
