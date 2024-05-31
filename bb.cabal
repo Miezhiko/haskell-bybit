@@ -13,6 +13,7 @@ executable bb
     Version
     Types
     Config
+    Bricks
     Futures
   hs-source-dirs:
     src
@@ -29,6 +30,7 @@ executable bb
   build-depends:
       base
     , base-unicode-symbols
+    , containers
     , aeson
     , yaml
     , filepath
@@ -39,6 +41,11 @@ executable bb
     , network
     , text
     , neat-interpolation
+    , brick
+    , vty
+    , vty-crossplatform
+    , lens
+    , time
   default-language: Haskell2010
   ghc-options:
     -Wall -threaded -rtsopts -with-rtsopts=-N

@@ -5,7 +5,7 @@
 
 module Main where
 
-import           Config                (Conf (cfgKey), getCfg)
+import           Config                (getCfg)
 import           Futures
 import           Version
 
@@ -39,16 +39,13 @@ options = [
   ]
 
 runPortfolioExec ∷ IO ()
-runPortfolioExec = do
-  cfg <- getCfg
-  putStrLn $ cfgKey cfg
-  go cfg
+runPortfolioExec = getCfg >>= go
 
 runHistoricalExec ∷ IO ()
-runHistoricalExec = putStrLn "aaa"
+runHistoricalExec = putStrLn "not implemented"
 
 runTickerExec ∷ String -> IO ()
-runTickerExec _ = putStrLn "aaa"
+runTickerExec _ = putStrLn "not implemented"
 
 gett ∷ ∀ (μ :: Type -> Type). Monad μ => String -> Options -> μ Options
 gett arg ο = pure ο { optBB = runTickerExec arg }
