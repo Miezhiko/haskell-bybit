@@ -161,7 +161,7 @@ drawUI st =
       B.padTop (B.Pad 1) resultsBlock
 
     resultsBlock =
-      ( B.withAttr (B.attrName "infoTitle") $ B.txt "Derivatives: " )
+      ( B.withAttr (B.attrName "infoTitle") $ B.txt "Derivatives " )
       <=>
       ( B.padTop (B.Pad 1) $ resultsDetail )
     
@@ -193,7 +193,7 @@ drawUI st =
       B.padRight (B.Pad 1) $
       B.hLimit 20 $
       B.withAttr (B.attrName "time") $
-      B.str (Tm.formatTime Tm.defaultTimeLocale "%H-%M-%S" t)
+      B.str (Tm.formatTime Tm.defaultTimeLocale "%H:%M:%S" t)
 
 go ∷ Conf -> IO ()
 go _cfg = do

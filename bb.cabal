@@ -14,6 +14,7 @@ executable bb
     Types
     Config
     Bricks
+    Auth
     Futures
   hs-source-dirs:
     src
