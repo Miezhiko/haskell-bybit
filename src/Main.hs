@@ -6,6 +6,7 @@
 module Main where
 
 import           Config                (getCfg)
+import           Conky
 import           Futures
 import           Version
 
@@ -26,23 +27,23 @@ newtype Options
 
 defaultOptions ∷ Options
 defaultOptions = Options {
-    optBB = runPortfolioExec
+    optBB = runFuturesExec
   }
 
 options ∷ [OptDescr (Options -> IO Options)]
 options = [
   Option "v" ["version"]    (NoArg showV)               "Display Version",
   Option []  ["help"]       (NoArg (showHelp options))  "Display Help",
-  Option "p" ["portfolio"]  (NoArg getP)                "Display Portfolio",
-  Option "h" ["historical"] (NoArg getH)                "Display Historical Data",
+  Option "f" ["futures"]    (NoArg getF)                "Display Derivatives",
+  Option "c" ["conky"]      (NoArg getC)                "Conky Mode",
   Option "t" ["ticker"]     (ReqArg gett "String")      "Display Some Ticker History"
   ]
 
-runPortfolioExec ∷ IO ()
-runPortfolioExec = getCfg >>= go
+runFuturesExec ∷ IO ()
+runFuturesExec = getCfg >>= go
 
-runHistoricalExec ∷ IO ()
-runHistoricalExec = putStrLn "not implemented"
+runConkyExec ∷ IO ()
+runConkyExec = getCfg >>= runEnvironment
 
 runTickerExec ∷ String -> IO ()
 runTickerExec _ = putStrLn "not implemented"
@@ -50,8 +51,8 @@ runTickerExec _ = putStrLn "not implemented"
 gett ∷ ∀ (μ :: Type -> Type). Monad μ => String -> Options -> μ Options
 gett arg ο = pure ο { optBB = runTickerExec arg }
 
-getP ∷ ∀ τ β. τ -> IO β
-getP _ = runPortfolioExec >> exitSuccess
+getF ∷ ∀ τ β. τ -> IO β
+getF _ = runFuturesExec >> exitSuccess
 
-getH ∷ ∀ τ β. τ -> IO β
-getH _ = runHistoricalExec >> exitSuccess
+getC ∷ ∀ τ β. τ -> IO β
+getC _ = runConkyExec >> exitSuccess

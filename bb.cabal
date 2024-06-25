@@ -1,5 +1,5 @@
 name:           bb
-version:        0.0.0.1
+version:        0.0.0.2
 category:       Finance
 author:         Miezhiko
 license:        GPLv3
@@ -16,6 +16,7 @@ executable bb
     Bricks
     Auth
     Futures
+    Conky
   hs-source-dirs:
     src
   default-extensions:

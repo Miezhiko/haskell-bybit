@@ -12,3 +12,7 @@ dist*
 *.local~*
 
 hake
+
+BTCUSDT
+ETHUSDT
+SOLUSDT
