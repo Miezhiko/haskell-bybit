@@ -17,13 +17,18 @@ import           Wuss
 
 import           Control.Concurrent         (forkIO)
 import           Control.Lens               ((.~), (^.))
-import           Control.Monad              (forever, void)
+import           Control.Monad              (forever, void, when)
 import           Control.Monad.State        (modify)
 
 import           Data.Aeson                 (decode)
 import           Data.Function              ((&))
+import           Data.IORef
 import qualified Data.Text                  as T
 import qualified Data.Time                  as Tm
+import           Data.Time.Clock            as Clc
+import qualified Data.Time.LocalTime        as Tml
+
+import           System.IO.Unsafe
 
 import           Network.WebSockets         (ClientApp, receiveData, sendClose, sendTextData)
 
@@ -35,8 +40,6 @@ import qualified Brick.AttrMap              as BA
 import qualified Brick.BChan                as BCh
 import qualified Brick.Widgets.Border       as BB
 import qualified Brick.Widgets.Border.Style as BBS
-import qualified Brick.Widgets.Edit         as BE
-import qualified Brick.Widgets.List         as BL
 
 import qualified Graphics.Vty               as V
 import qualified Graphics.Vty.Config
@@ -55,12 +58,10 @@ extractValues (OrderData _ myData) =
      else Just (s myData, head (head bList))
 
 theMap ∷ BA.AttrMap
-theMap = BA.attrMap V.defAttr [ (BE.editAttr           , V.black `B.on` V.cyan)
-                              , (BE.editFocusedAttr    , V.black `B.on` V.yellow)
-                              , (BL.listAttr           , V.white `B.on` V.blue)
-                              , (BL.listSelectedAttr   , V.blue `B.on` V.white)
-                              , (B.attrName "infoTitle", B.fg V.cyan)
+theMap = BA.attrMap V.defAttr [ (B.attrName "infoTitle", B.fg V.cyan)
                               , (B.attrName "time"     , B.fg V.yellow)
+                              , (B.attrName "green"    , B.fg V.green)
+                              , (B.attrName "red"      , B.fg V.red)
                               ]
 
 -- | Defines how the brick application will work / handle events
@@ -73,6 +74,25 @@ app =
         , B.appAttrMap      = const theMap
         }
 
+btcRef  ∷ IORef Float
+ethRef  ∷ IORef Float
+solRef  ∷ IORef Float
+
+btcTRef ∷ IORef Tm.LocalTime
+ethTRef ∷ IORef Tm.LocalTime
+solTRef ∷ IORef Tm.LocalTime
+
+zerotime ∷ Tm.LocalTime
+zerotime = Tml.utcToLocalTime Tml.utc (Clc.UTCTime (Tm.fromGregorian 1 1 1) 0)
+
+btcRef  = unsafePerformIO $ newIORef 0.0
+ethRef  = unsafePerformIO $ newIORef 0.0
+solRef  = unsafePerformIO $ newIORef 0.0
+
+btcTRef = unsafePerformIO $ newIORef zerotime
+ethTRef = unsafePerformIO $ newIORef zerotime
+solTRef = unsafePerformIO $ newIORef zerotime
+  
 ws ∷ ClientApp ()
 ws connection = do
   chan <- BCh.newBChan 100
@@ -84,13 +104,26 @@ ws connection = do
       Just dat ->
         case (extractValues dat) of
           Just (ss, p) -> do
-            t <- getTime
-            BCh.writeBChan chan $ EventUpdateTime t
-            case ss of
-              "BTCUSDT" -> BCh.writeBChan chan $ EventUpdateBTC p
-              "ETHUSDT" -> BCh.writeBChan chan $ EventUpdateETH p
-              "SOLUSDT" -> BCh.writeBChan chan $ EventUpdateSOL p
-              _         -> pass
+            newTime <- getTime
+            BCh.writeBChan chan $ EventUpdateTime newTime
+            let chainType = 
+                  case ss of
+                    "BTCUSDT" -> Just (EventUpdateBTC, btcTRef, btcRef)
+                    "ETHUSDT" -> Just (EventUpdateETH, ethTRef, ethRef)
+                    "SOLUSDT" -> Just (EventUpdateSOL, solTRef, solRef)
+                    _         -> Nothing
+            case chainType of
+              Just (cht, coinTRef, coinRef) -> do
+                lastDiffTime <- readIORef coinTRef
+                let tDiff    = Tm.diffLocalTime newTime lastDiffTime
+                    tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
+                    coinNow  = (read $ T.unpack p) :: Float
+                coinWas <- readIORef coinRef
+                when (tDiffSec > 10) $ do
+                  writeIORef coinTRef newTime
+                  writeIORef coinRef coinNow
+                BCh.writeBChan chan $ cht (coinNow > coinWas, p)
+              Nothing  -> pass
           Nothing      -> pass
       Nothing -> pass
 
@@ -99,9 +132,9 @@ ws connection = do
   -- Construct the initial state values
   let st = BrickState
             { _stTime         = t
-            , _stBTC          = "0" -- ^ Dan Pena
-            , _stETH          = "0"
-            , _stSOL          = "0"
+            , _stBTC          = (False, "0") -- ^ Dan Pena
+            , _stETH          = (False, "0")
+            , _stSOL          = (False, "0")
             }
 
   let subText = [text|
@@ -137,7 +170,7 @@ handleEvent ev =
   case ev of
     (B.VtyEvent _ve@(V.EvKey k ms)) ->
       case (k, ms) of
-        (K.KChar 'q', [])  -> B.halt  -- Exit on "q" key event
+        (K.KChar 'q', []) -> B.halt  -- Exit on "q" key event
         (K.KEsc, [])      -> B.halt
         _                 -> pass
 
@@ -170,19 +203,24 @@ drawUI st =
       B.hLimit 60 $
       vtitle "BTCUSDT:"
       <=>
-      B.padLeft (B.Pad 2) (B.txt (st ^. stBTC))
+      B.padLeft (B.Pad 2) (vvalue (st ^. stBTC))
       <=>
       vtitle "ETHUSDT:"
       <=>
-      B.padLeft (B.Pad 2) (B.txt (st ^. stETH))
+      B.padLeft (B.Pad 2) (vvalue (st ^. stETH))
       <=>
       vtitle "SOLUSDT:"
       <=>
-      B.padLeft (B.Pad 2) (B.txt (st ^. stSOL))
+      B.padLeft (B.Pad 2) (vvalue (st ^. stSOL))
       <=>
       B.fill ' '
 
     timeBlock = time (st ^. stTime)
+
+    vvalue ∷ (Bool, T.Text) -> B.Widget n
+    vvalue (green, t) =
+      let attrName = if green then "green" else "red"
+      in B.withAttr (B.attrName attrName) $ B.txt t
 
     vtitle t =
       B.withAttr (B.attrName "infoTitle") $
@@ -198,4 +236,4 @@ drawUI st =
 go ∷ Conf -> IO ()
 go _cfg = do
   runSecureClient "stream.bybit.com"
-                  443 "/v5/public/linear" ws
+              443 "/v5/public/linear" ws

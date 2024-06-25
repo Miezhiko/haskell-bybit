@@ -12,9 +12,9 @@ import qualified Data.Time       as Tm
 -- | Events that can be sent
 data Event
   = EventUpdateTime Tm.LocalTime
-  | EventUpdateBTC T.Text
-  | EventUpdateETH T.Text
-  | EventUpdateSOL T.Text
+  | EventUpdateBTC (Bool, T.Text)
+  | EventUpdateETH (Bool, T.Text)
+  | EventUpdateSOL (Bool, T.Text)
 
 data Name = Derivatives
   deriving (Eq, Ord, Show)
@@ -23,9 +23,9 @@ data Name = Derivatives
 data BrickState
   = BrickState
       { _stTime :: !Tm.LocalTime
-      , _stBTC  :: !T.Text
-      , _stETH  :: !T.Text
-      , _stSOL  :: !T.Text
+      , _stBTC  :: !(Bool, T.Text)
+      , _stETH  :: !(Bool, T.Text)
+      , _stSOL  :: !(Bool, T.Text)
       }
 
 makeLenses ''BrickState

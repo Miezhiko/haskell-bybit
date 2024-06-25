@@ -22,13 +22,25 @@ void ∘ forkIO ∘ forever $ do
     Just dat ->
       case (extractValues dat) of
         Just (ss, p) -> do
-          t <- getTime
-          BCh.writeBChan chan $ EventUpdateTime t
-          case ss of
-            "BTCUSDT" -> BCh.writeBChan chan $ EventUpdateBTC p
-            "ETHUSDT" -> BCh.writeBChan chan $ EventUpdateETH p
-            "SOLUSDT" -> BCh.writeBChan chan $ EventUpdateSOL p
-            _         -> pass
+          newTime <- getTime
+          BCh.writeBChan chan $ EventUpdateTime newTime
+          let chainType = 
+                case ss of
+                  "BTCUSDT" -> Just (EventUpdateBTC, btcTRef, btcRef)
+                  "ETHUSDT" -> Just (EventUpdateETH, ethTRef, ethRef)
+                  "SOLUSDT" -> Just (EventUpdateSOL, solTRef, solRef)
+                  _         -> Nothing
+          case chainType of
+            Just (cht, coinTRef, coinRef) -> do
+              lastDiffTime <- readIORef coinTRef
+              let tDiff    = Tm.diffLocalTime newTime lastDiffTime
+                  tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
+                  coinNow  = (read $ T.unpack p) :: Float
+              coinWas <- readIORef coinRef
+              when (tDiffSec > 10) $ do
+                writeIORef coinTRef newTime
+                writeIORef coinRef coinNow
+              BCh.writeBChan chan $ cht (coinNow > coinWas, p)
+            Nothing  -> pass
         Nothing      -> pass
-    Nothing -> pass
 ```
