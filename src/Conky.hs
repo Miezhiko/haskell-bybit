@@ -88,8 +88,10 @@ ws connection = do
                 when (tDiffSec > 10) $ do
                   writeIORef coinTRef newTime
                   writeIORef coinRef coinNow
-                -- coinNow > coinWas (for color)
-                writeFile cht coinNowS
+                let sign = if coinNow > coinWas
+                            then "+"
+                            else "-"
+                writeFile cht $ sign ++ coinNowS
               Nothing  -> pass
           Nothing      -> pass
       Nothing -> pass
