@@ -1,0 +1,9 @@
+{
+  "req_id": "btcusdt",
+  "op": "subscribe",
+  "args": [
+      "orderbook.1.BTCUSDT",
+      "orderbook.1.ETHUSDT",
+      "orderbook.1.SOLUSDT"
+  ]
+}

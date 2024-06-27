@@ -1,5 +1,5 @@
 name:           bb
-version:        0.0.0.3
+version:        0.0.0.5
 category:       Finance
 author:         Miezhiko
 license:        GPLv3
@@ -12,6 +12,7 @@ executable bb
     Paths_bb
     Version
     Types
+    Ticker
     Config
     Bricks
     Auth
@@ -34,6 +35,7 @@ executable bb
     , base-unicode-symbols
     , containers
     , aeson
+    , bytestring
     , yaml
     , filepath
     , directory
@@ -42,7 +44,6 @@ executable bb
     , mtl
     , network
     , text
-    , neat-interpolation
     , brick
     , vty
     , vty-crossplatform

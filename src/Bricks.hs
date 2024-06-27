@@ -6,15 +6,14 @@ module Bricks where
 
 import           Control.Lens.TH (makeLenses)
 
+import qualified Data.Map        as M
 import qualified Data.Text       as T
 import qualified Data.Time       as Tm
 
 -- | Events that can be sent
 data Event
   = EventUpdateTime Tm.LocalTime
-  | EventUpdateBTC (Bool, T.Text)
-  | EventUpdateETH (Bool, T.Text)
-  | EventUpdateSOL (Bool, T.Text)
+  | EventUpdateCoin (String, (Bool, T.Text))
 
 data Name = Derivatives
   deriving (Eq, Ord, Show)
@@ -23,9 +22,7 @@ data Name = Derivatives
 data BrickState
   = BrickState
       { _stTime :: !Tm.LocalTime
-      , _stBTC  :: !(Bool, T.Text)
-      , _stETH  :: !(Bool, T.Text)
-      , _stSOL  :: !(Bool, T.Text)
+      , _stCoin :: !(M.Map String (Bool, T.Text))
       }
 
 makeLenses ''BrickState

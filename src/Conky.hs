@@ -10,6 +10,7 @@ module Conky
 import           Prelude.Unicode
 
 import           Config
+import           Ticker
 import           Types
 
 import           Wuss
@@ -19,6 +20,7 @@ import           Control.Monad       (forever, void, when)
 
 import           Data.Aeson          (decode)
 import           Data.IORef
+import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.Time           as Tm
 import           Data.Time.Clock     as Clc
@@ -27,8 +29,6 @@ import qualified Data.Time.LocalTime as Tml
 import           System.IO.Unsafe
 
 import           Network.WebSockets  (ClientApp, receiveData, sendClose, sendTextData)
-
-import           NeatInterpolation   (text)
 
 -- | Do nothing returning unit inside applicative.
 pass ∷ Applicative f => f ()
@@ -41,27 +41,17 @@ extractValues (OrderData _ myData) =
      then Nothing
      else Just (s myData, head (head bList))
 
-btcRef  ∷ IORef Float
-ethRef  ∷ IORef Float
-solRef  ∷ IORef Float
-
-btcTRef ∷ IORef Tm.LocalTime
-ethTRef ∷ IORef Tm.LocalTime
-solTRef ∷ IORef Tm.LocalTime
+coinRefs ∷ IORef (M.Map String (Float, Tm.LocalTime))
+coinRefs = unsafePerformIO $ newIORef M.empty
 
 zerotime ∷ Tm.LocalTime
 zerotime = Tml.utcToLocalTime Tml.utc (Clc.UTCTime (Tm.fromGregorian 1 1 1) 0)
 
-btcRef  = unsafePerformIO $ newIORef 0.0
-ethRef  = unsafePerformIO $ newIORef 0.0
-solRef  = unsafePerformIO $ newIORef 0.0
-
-btcTRef = unsafePerformIO $ newIORef zerotime
-ethTRef = unsafePerformIO $ newIORef zerotime
-solTRef = unsafePerformIO $ newIORef zerotime
-  
 ws ∷ ClientApp ()
 ws connection = do
+
+  tickerUSDTs <- extractTickerUSDTs
+  writeIORef coinRefs (M.fromList $ map (\x -> (x, (0.0, zerotime))) tickerUSDTs)
 
   void ∘ forkIO ∘ forever $ do
     message <- receiveData connection
@@ -69,46 +59,28 @@ ws connection = do
     case jsonData of
       Just dat ->
         case (extractValues dat) of
-          Just (ss, p) -> do
-            newTime <- getTime
-            let chainType = 
-                  case ss of
-                    "BTCUSDT" -> Just ("BTCUSDT", btcTRef, btcRef)
-                    "ETHUSDT" -> Just ("ETHUSDT", ethTRef, ethRef)
-                    "SOLUSDT" -> Just ("SOLUSDT", solTRef, solRef)
-                    _         -> Nothing
-            case chainType of
-              Just (cht, coinTRef, coinRef) -> do
-                lastDiffTime <- readIORef coinTRef
+          Just (tt, p) -> do
+            let ss = T.unpack tt
+            newTime   <- getTime
+            mcoinRefs <- readIORef coinRefs
+            case M.lookup ss mcoinRefs of
+              Just (coinWas, lastDiffTime) -> do
                 let tDiff    = Tm.diffLocalTime newTime lastDiffTime
                     tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
                     coinNowS = T.unpack p
                     coinNow  = read coinNowS :: Float
-                coinWas <- readIORef coinRef
-                when (tDiffSec > 10) $ do
-                  writeIORef coinTRef newTime
-                  writeIORef coinRef coinNow
+                when (tDiffSec > 10) $
+                  writeIORef coinRefs $ M.insert ss (coinNow, newTime) mcoinRefs
                 let sign = if coinNow > coinWas
                             then "+"
                             else "-"
-                writeFile cht $ sign ++ coinNowS
+                writeFile ss $ sign ++ coinNowS
               Nothing  -> pass
           Nothing      -> pass
       Nothing -> pass
 
-  let subText = [text|
-{
-    "req_id": "btcusdt",
-    "op": "subscribe",
-    "args": [
-        "orderbook.1.BTCUSDT",
-        "orderbook.1.ETHUSDT",
-        "orderbook.1.SOLUSDT"
-    ]
-}
-  |]
-
-  sendTextData connection subText
+  ts <- getTickerAsString
+  sendTextData connection $ T.pack ts
 
   qLoop
 
