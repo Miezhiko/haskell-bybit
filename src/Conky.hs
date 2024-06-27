@@ -16,7 +16,7 @@ import           Types
 import           Wuss
 
 import           Control.Concurrent  (forkIO)
-import           Control.Monad       (forever, void)
+import           Control.Monad       (forever, void, unless)
 
 import           Data.Aeson          (decode)
 import           Data.IORef
@@ -63,7 +63,7 @@ ws connection = do
     case jsonData of
       Just dat ->
         case (extractValues dat) of
-          Just (tt, p) -> do
+          Just (tt, p) -> unless (T.null p) $ do
             let ss = T.unpack tt
             newTime   <- getTime
             mcoinRefs <- readIORef coinRefs
