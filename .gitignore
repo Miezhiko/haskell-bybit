@@ -13,6 +13,4 @@ dist*
 
 hake
 
-BTCUSDT
-ETHUSDT
-SOLUSDT
+conky/

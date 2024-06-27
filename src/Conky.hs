@@ -26,6 +26,7 @@ import qualified Data.Time           as Tm
 import           Data.Time.Clock     as Clc
 import qualified Data.Time.LocalTime as Tml
 
+import           System.FilePath
 import           System.IO.Unsafe
 
 import           Network.WebSockets  (ClientApp, receiveData, sendClose, sendTextData)
@@ -41,7 +42,7 @@ extractValues (OrderData _ myData) =
      then Nothing
      else Just (s myData, head (head bList))
 
-coinRefs ∷ IORef (M.Map String (Float, Tm.LocalTime))
+coinRefs ∷ IORef (M.Map String ((Float, Float, Float), Tm.LocalTime))
 coinRefs = unsafePerformIO $ newIORef M.empty
 
 zerotime ∷ Tm.LocalTime
@@ -51,7 +52,10 @@ ws ∷ ClientApp ()
 ws connection = do
 
   tickerUSDTs <- extractTickerUSDTs
-  writeIORef coinRefs (M.fromList $ map (\x -> (x, (0.0, zerotime))) tickerUSDTs)
+  writeIORef coinRefs
+    (M.fromList $ map (\x ->
+      (x, ((0.0, 0.0, 0.0), zerotime))) tickerUSDTs
+    )
 
   void ∘ forkIO ∘ forever $ do
     message <- receiveData connection
@@ -64,17 +68,27 @@ ws connection = do
             newTime   <- getTime
             mcoinRefs <- readIORef coinRefs
             case M.lookup ss mcoinRefs of
-              Just (coinWas, lastDiffTime) -> do
+              Just ((coinWas, cMin, cMax), lastDiffTime) -> do
                 let tDiff    = Tm.diffLocalTime newTime lastDiffTime
                     tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
                     coinNowS = T.unpack p
                     coinNow  = read coinNowS :: Float
                 when (tDiffSec > 10) $
-                  writeIORef coinRefs $ M.insert ss (coinNow, newTime) mcoinRefs
+                  writeIORef coinRefs $
+                    let newmin = if coinNow < cMin
+                                  then coinNow
+                                  else cMin
+                        newmax = if coinNow > cMax
+                                  then coinNow
+                                  else cMax
+                    in M.insert ss ((coinNow, newmin, newmax), newTime) mcoinRefs
                 let sign = if coinNow > coinWas
                             then "+"
                             else "-"
-                writeFile ss $ sign ++ coinNowS
+                writeFile ("conky" </> ss) $ sign ++ coinNowS
+                let minmaxdiff = cMax - cMin
+                    cGraph = ((coinNow - (cMin-minmaxdiff)) / ((cMax+minmaxdiff) - (cMin-minmaxdiff))) * 100
+                writeFile ("conky" </> (ss ++ "_GRAPH")) $ show cGraph
               Nothing  -> pass
           Nothing      -> pass
       Nothing -> pass
