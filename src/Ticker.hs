@@ -23,7 +23,7 @@ instance FromJSON Request where
   parseJSON v = fail $ "Expected an object, but got " ++ show v
 
 extractSymbols ∷ Request -> [String]
-extractSymbols req = map (drop 9) (args req)
+extractSymbols req = map (drop 12) (args req)
 
 getTickerAsString ∷ IO String
 getTickerAsString = readFile "ticker.json"
