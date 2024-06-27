@@ -54,7 +54,7 @@ ws connection = do
   tickerUSDTs <- extractTickerUSDTs
   writeIORef coinRefs
     (M.fromList $ map (\x ->
-      (x, ((0.0, 0.0, 0.0), zerotime))) tickerUSDTs
+      (x, ((0.0, 666666666.0, 0.0), zerotime))) tickerUSDTs
     )
 
   void ∘ forkIO ∘ forever $ do
