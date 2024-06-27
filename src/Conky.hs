@@ -86,8 +86,7 @@ ws connection = do
                             then "+"
                             else "-"
                 writeFile ("conky" </> ss) $ sign ++ coinNowS
-                let minmaxdiff = cMax - cMin
-                    cGraph = ((coinNow - (cMin-minmaxdiff)) / ((cMax+minmaxdiff) - (cMin-minmaxdiff))) * 100
+                let cGraph = (coinNow - cMin) / (cMax - cMin) * 100
                 writeFile ("conky" </> (ss ++ "_GRAPH")) $ show cGraph
               Nothing  -> pass
           Nothing      -> pass
