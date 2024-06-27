@@ -16,7 +16,7 @@ import           Types
 import           Wuss
 
 import           Control.Concurrent  (forkIO)
-import           Control.Monad       (forever, void, when)
+import           Control.Monad       (forever, void)
 
 import           Data.Aeson          (decode)
 import           Data.IORef
@@ -73,22 +73,23 @@ ws connection = do
                     tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
                     coinNowS = T.unpack p
                     coinNow  = read coinNowS :: Float
-                when (tDiffSec > 10) $
-                  writeIORef coinRefs $
-                    let newmin = if coinNow < cMin
+                    newNow = if (tDiffSec > 10)
+                                  then coinNow
+                                  else coinWas
+                    newmin = if coinNow < cMin
                                   then coinNow
                                   else cMin
-                        newmax = if coinNow > cMax
+                    newmax = if coinNow > cMax
                                   then coinNow
                                   else cMax
-                    in M.insert ss ((coinNow, newmin, newmax), newTime) mcoinRefs
+                writeIORef coinRefs $ M.insert ss ((newNow, newmin, newmax), newTime) mcoinRefs
                 let sign = if coinNow > coinWas
                             then "+"
                             else "-"
                 writeFile ("conky" </> ss) $ sign ++ coinNowS
                 let cGraph =
-                      if cMax > cMin
-                        then (coinNow - cMin) / (cMax - cMin) * 100
+                      if newmax > newmin
+                        then (coinNow - newmin) / (newmax - newmin) * 100
                         else 50.0
                 writeFile ("conky" </> (ss ++ "_GRAPH")) $ show cGraph
               Nothing  -> pass
