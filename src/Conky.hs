@@ -12,41 +12,26 @@ import           Prelude.Unicode
 import           Config
 import           Ticker
 import           Types
+import           Utils
 
 import           Wuss
 
 import           Control.Concurrent  (forkIO)
-import           Control.Monad       (forever, void, unless)
+import           Control.Monad       (forever, unless, void)
 
 import           Data.Aeson          (decode)
 import           Data.IORef
 import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.Time           as Tm
-import           Data.Time.Clock     as Clc
-import qualified Data.Time.LocalTime as Tml
 
 import           System.FilePath
 import           System.IO.Unsafe
 
 import           Network.WebSockets  (ClientApp, receiveData, sendClose, sendTextData)
 
--- | Do nothing returning unit inside applicative.
-pass ∷ Applicative f => f ()
-pass = pure ()
-
-extractValues ∷ OrderData -> Maybe (T.Text, T.Text)
-extractValues (OrderData _ myData) =
-  let bList = b myData
-  in if null bList
-     then Nothing
-     else Just (s myData, head (head bList))
-
 coinRefs ∷ IORef (M.Map String ((Float, Float, Float), Tm.LocalTime))
 coinRefs = unsafePerformIO $ newIORef M.empty
-
-zerotime ∷ Tm.LocalTime
-zerotime = Tml.utcToLocalTime Tml.utc (Clc.UTCTime (Tm.fromGregorian 1 1 1) 0)
 
 ws ∷ ClientApp ()
 ws connection = do

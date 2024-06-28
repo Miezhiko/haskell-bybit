@@ -13,6 +13,7 @@ import           Bricks
 import           Config
 import           Ticker
 import           Types
+import           Utils
 
 import           Wuss
 
@@ -27,8 +28,6 @@ import           Data.IORef
 import qualified Data.Map                   as M
 import qualified Data.Text                  as T
 import qualified Data.Time                  as Tm
-import           Data.Time.Clock            as Clc
-import qualified Data.Time.LocalTime        as Tml
 
 import           System.IO.Unsafe
 
@@ -46,17 +45,6 @@ import qualified Graphics.Vty.Config
 import qualified Graphics.Vty.CrossPlatform
 import qualified Graphics.Vty.Input.Events  as K
 
--- | Do nothing returning unit inside applicative.
-pass ∷ Applicative f => f ()
-pass = pure ()
-
-extractValues ∷ OrderData -> Maybe (T.Text, T.Text)
-extractValues (OrderData _ myData) =
-  let bList = b myData
-  in if null bList
-     then Nothing
-     else Just (s myData, head (head bList))
-
 theMap ∷ BA.AttrMap
 theMap = BA.attrMap V.defAttr [ (B.attrName "infoTitle", B.fg V.cyan)
                               , (B.attrName "time"     , B.fg V.yellow)
@@ -64,7 +52,6 @@ theMap = BA.attrMap V.defAttr [ (B.attrName "infoTitle", B.fg V.cyan)
                               , (B.attrName "red"      , B.fg V.red)
                               ]
 
--- | Defines how the brick application will work / handle events
 app ∷ B.App BrickState Event Name
 app =
   B.App { B.appDraw         = drawUI
@@ -76,9 +63,6 @@ app =
 
 coinRefs ∷ IORef (M.Map String (Float, Tm.LocalTime))
 coinRefs = unsafePerformIO $ newIORef M.empty
-
-zerotime ∷ Tm.LocalTime
-zerotime = Tml.utcToLocalTime Tml.utc (Clc.UTCTime (Tm.fromGregorian 1 1 1) 0)
 
 ws ∷ ClientApp ()
 ws connection = do
