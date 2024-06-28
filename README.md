@@ -33,9 +33,9 @@ conky integration example
 
 ```bash
 ${color #C0C0C0} Ticker USDT${alignr}Graph 
-  ${color}BTC ${alignr}${color}${execpi 30 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/BTCUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "cat /conky/BTCUSDT_GRAPH" 17,210 C0C0C0 EAEAEA -lt}
-  ${color}ETH ${alignr}${color}${execpi 30 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/ETHUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "cat /conky/ETHUSDT_GRAPH" 17,210 C0C0C0 EAEAEA -lt}
-  ${color}SOL ${alignr}${color}${execpi 30 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/SOLUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "cat /conky/SOLUSDT_GRAPH" 17,210 C0C0C0 EAEAEA -lt}
+${color}BTC ${alignr}${color}${execpi 30 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/BTCUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "awk '{print $1}' /conky/BTCUSDT_GRAPH" 17,210 C0C0C0 C0C0C0 -lt}
+${color}ETH ${alignr}${color}${execpi 30 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/ETHUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "awk '{print $1}' /conky/ETHUSDT_GRAPH" 17,210 C0C0C0 C0C0C0 -lt}
+${color}SOL ${alignr}${color}${execpi 30 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/SOLUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "awk '{print $1}' /conky/SOLUSDT_GRAPH" 17,210 C0C0C0 C0C0C0 -lt}
 ```
 
 ```haskell

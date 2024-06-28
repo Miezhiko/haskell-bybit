@@ -4,6 +4,8 @@
   "args": [
       "orderbook.1.BTCUSDT",
       "orderbook.1.ETHUSDT",
-      "orderbook.1.SOLUSDT"
+      "orderbook.1.SOLUSDT",
+      "orderbook.1.ADAUSDT",
+      "orderbook.1.DOTUSDT"
   ]
 }
