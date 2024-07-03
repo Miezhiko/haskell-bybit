@@ -1,6 +1,5 @@
 {-# LANGUAGE
-    QuasiQuotes
-  , TemplateHaskell
+    TemplateHaskell
   #-}
 
 module Conky

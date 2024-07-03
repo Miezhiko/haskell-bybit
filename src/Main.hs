@@ -7,6 +7,7 @@ module Main where
 
 import           Config                (getCfg)
 import           Conky
+import           ConkyGen
 import           Futures
 import           Version
 
@@ -36,6 +37,7 @@ options = [
   Option []  ["help"]       (NoArg (showHelp options))  "Display Help",
   Option "f" ["futures"]    (NoArg getF)                "Display Derivatives",
   Option "c" ["conky"]      (NoArg getC)                "Conky Mode",
+  Option []  ["conky-gen"]  (NoArg getCG)               "Generate Conky Config",
   Option "t" ["ticker"]     (ReqArg gett "String")      "Display Some Ticker History"
   ]
 
@@ -44,6 +46,9 @@ runFuturesExec = getCfg >>= go
 
 runConkyExec ∷ IO ()
 runConkyExec = getCfg >>= runEnvironment
+
+runConkyGenExec ∷ IO ()
+runConkyGenExec = getCfg >>= generateConkyConfig
 
 runTickerExec ∷ String -> IO ()
 runTickerExec _ = putStrLn "not implemented"
@@ -56,3 +61,6 @@ getF _ = runFuturesExec >> exitSuccess
 
 getC ∷ ∀ τ β. τ -> IO β
 getC _ = runConkyExec >> exitSuccess
+
+getCG ∷ ∀ τ β. τ -> IO β
+getCG _ = runConkyGenExec >> exitSuccess
