@@ -58,7 +58,7 @@ ws connection = do
                     tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
                     coinNowS = T.unpack p
                     coinNow  = read coinNowS :: Float
-                    newNow = if (tDiffSec > 10)
+                    newNow = if (tDiffSec > 2)
                                   then coinNow
                                   else coinWas
                     newmin = if coinNow < cMin

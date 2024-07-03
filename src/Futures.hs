@@ -88,7 +88,7 @@ ws connection = do
                 let tDiff    = Tm.diffLocalTime newTime lastDiffTime
                     tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
                     coinNow  = (read $ T.unpack p) :: Float
-                when (tDiffSec > 10) $
+                when (tDiffSec > 2) $
                   writeIORef coinRefs $ M.insert ss (coinNow, newTime) mcoinRefs
                 BCh.writeBChan chan (EventUpdateCoin $ (ss, (coinNow > coinWas, p)))
               Nothing  -> pass
