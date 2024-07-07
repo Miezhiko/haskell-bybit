@@ -190,7 +190,5 @@ go _cfg = runSecureClientLoop
                 443 "/v5/public/linear" ws `catch` handleException
   handleException ∷ SomeException -> IO ()
   handleException e = do
-    putStrLn $ "Error: " ++ show e
-    putStrLn "Reconnecting..."
     threadDelay 1000000
     runSecureClientLoop
