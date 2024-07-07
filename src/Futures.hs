@@ -17,7 +17,8 @@ import           Utils
 
 import           Wuss
 
-import           Control.Concurrent         (forkIO)
+import           Control.Concurrent         (forkIO, threadDelay)
+import           Control.Exception          (SomeException, catch)
 import           Control.Lens               ((.~), (^.))
 import           Control.Monad              (forever, void, when)
 import           Control.Monad.State        (modify)
@@ -182,6 +183,14 @@ drawUI st =
       B.str (Tm.formatTime Tm.defaultTimeLocale "%H:%M:%S" t)
 
 go ∷ Conf -> IO ()
-go _cfg = do
-  runSecureClient "stream.bybit.com"
-              443 "/v5/public/linear" ws
+go _cfg = runSecureClientLoop
+ where
+  runSecureClientLoop =
+    runSecureClient "stream.bybit.com"
+                443 "/v5/public/linear" ws `catch` handleException
+  handleException ∷ SomeException -> IO ()
+  handleException e = do
+    putStrLn $ "Error: " ++ show e
+    putStrLn "Reconnecting..."
+    threadDelay 1000000
+    runSecureClientLoop
