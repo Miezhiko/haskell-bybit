@@ -15,19 +15,20 @@ import           Utils
 
 import           Wuss
 
-import           Control.Concurrent  (forkIO)
-import           Control.Monad       (forever, unless, void)
+import           Control.Concurrent (forkIO, threadDelay)
+import           Control.Exception  (SomeException, catch)
+import           Control.Monad      (forever, unless, void)
 
-import           Data.Aeson          (decode)
+import           Data.Aeson         (decode)
 import           Data.IORef
-import qualified Data.Map            as M
-import qualified Data.Text           as T
-import qualified Data.Time           as Tm
+import qualified Data.Map           as M
+import qualified Data.Text          as T
+import qualified Data.Time          as Tm
 
 import           System.FilePath
 import           System.IO.Unsafe
 
-import           Network.WebSockets  (ClientApp, receiveData, sendClose, sendTextData)
+import           Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
 
 coinRefs ∷ IORef (M.Map String ((Float, Float, Float), Tm.LocalTime))
 coinRefs = unsafePerformIO $ newIORef M.empty
@@ -98,6 +99,14 @@ ws connection = do
     if c == 'q' then return () else qLoop
 
 runEnvironment ∷ Conf -> IO ()
-runEnvironment _cfg = do
-  runSecureClient "stream.bybit.com"
-              443 "/v5/public/linear" ws
+runEnvironment _cfg = runSecureClientLoop
+ where
+  runSecureClientLoop =
+    runSecureClient "stream.bybit.com"
+                443 "/v5/public/linear" ws `catch` handleException
+  handleException ∷ SomeException -> IO ()
+  handleException e = do
+    putStrLn $ "Error: " ++ show e
+    putStrLn "Reconnecting..."
+    threadDelay 1000000
+    runSecureClientLoop
