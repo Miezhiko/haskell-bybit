@@ -17,8 +17,7 @@ import           Utils
 
 import           Wuss
 
-import           Control.Concurrent         (forkIO, threadDelay)
-import           Control.Exception          (SomeException, catch)
+import           Control.Concurrent         (forkIO)
 import           Control.Lens               ((.~), (^.))
 import           Control.Monad              (forever, void, when)
 import           Control.Monad.State        (modify)
@@ -183,12 +182,5 @@ drawUI st =
       B.str (Tm.formatTime Tm.defaultTimeLocale "%H:%M:%S" t)
 
 go ∷ Conf -> IO ()
-go _cfg = runSecureClientLoop
- where
-  runSecureClientLoop =
-    runSecureClient "stream.bybit.com"
-                443 "/v5/public/linear" ws `catch` handleException
-  handleException ∷ SomeException -> IO ()
-  handleException e = do
-    threadDelay 1000000
-    runSecureClientLoop
+go _cfg = runSecureClient "stream.bybit.com"
+            443 "/v5/public/linear" ws

@@ -15,8 +15,7 @@ import           Utils
 
 import           Wuss
 
-import           Control.Concurrent (forkIO, threadDelay)
-import           Control.Exception  (SomeException, catch)
+import           Control.Concurrent (forkIO)
 import           Control.Monad      (forever, unless, void)
 
 import           Data.Aeson         (decode)
@@ -99,14 +98,5 @@ ws connection = do
     if c == 'q' then return () else qLoop
 
 runEnvironment ∷ Conf -> IO ()
-runEnvironment _cfg = runSecureClientLoop
- where
-  runSecureClientLoop =
-    runSecureClient "stream.bybit.com"
-                443 "/v5/public/linear" ws `catch` handleException
-  handleException ∷ SomeException -> IO ()
-  handleException e = do
-    putStrLn $ "Error: " ++ show e
-    putStrLn "Reconnecting..."
-    threadDelay 1000000
-    runSecureClientLoop
+runEnvironment _cfg = runSecureClient "stream.bybit.com"
+                        443 "/v5/public/linear" ws
