@@ -13,6 +13,9 @@ Brick TUI to BYBIT derivatives API on wuss (secure WebSocket)
 ```yml
 cfgKey: yourBBpublikKey
 cfgSecret: yourBBsecretKeyItsUsuallyLonger
+cfgSignals:
+  "BTCUSDT" : [ 50000, 100000 ]
+cfgPipe: False
 ```
 
 `ticker.json` example included:

@@ -8,6 +8,9 @@
       "orderbook.1.ADAUSDT",
       "orderbook.1.DOTUSDT",
       "orderbook.1.TONUSDT",
-      "orderbook.1.XRPUSDT"
+      "orderbook.1.XRPUSDT",
+      "orderbook.1.TRXUSDT",
+      "orderbook.1.WIFUSDT",
+      "orderbook.1.1000PEPEUSDT"
   ]
 }
