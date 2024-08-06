@@ -37,9 +37,9 @@ conky integration can be generated with `--conky-gen`
 
 ```bash
 ${color #C0C0C0} Ticker USDT${alignr}Graph 
-${color}BTC ${alignr}${color}${execpi 1 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/BTCUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "awk '{print $1}' /conky/BTCUSDT_GRAPH" 17,210 C0C0C0 C0C0C0 -lt}
-${color}ETH ${alignr}${color}${execpi 1 grep -oP '(?<=^)[+-]?\d*\.?\d+' /conky/ETHUSDT | awk '{print $1 < 0 ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" substr($0, 2)}'} ${color}${execgraph "awk '{print $1}' /conky/ETHUSDT_GRAPH" 17,210 C0C0C0 C0C0C0 -lt}
-...
+${color}BTC ${alignr}${color}${execpi 1 hodl BTCUSDT | grep -oP '(?<=^)-?\d*\.?\d{2}' | awk '{print $1 ~ /^-/ ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" $0}'} ${color}${execgraph "hodl BTCUSDT_GRAPH" 17,210 C0C0C0 33A3A3 -lt}
+${color}ETH ${alignr}${color}${execpi 1 hodl ETHUSDT | grep -oP '(?<=^)-?\d*\.?\d{2}' | awk '{print $1 ~ /^-/ ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" $0}'} ${color}${execgraph "hodl ETHUSDT_GRAPH" 17,210 C0C0C0 33A3A3 -lt}
+${color}SOL ${alignr}${color}${execpi 1 hodl SOLUSDT | grep -oP '(?<=^)-?\d*\.?\d{4}' | awk '{print $1 ~ /^-/ ? "${color FF9999}" substr($0, 2) : "${color 99FF99}" $0}'} ${color}${execgraph "hodl SOLUSDT_GRAPH" 17,210 C0C0C0 33A3A3 -lt}
 ```
 
 ```haskell
