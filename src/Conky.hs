@@ -16,7 +16,7 @@ import           Utils
 import           Wuss
 
 import           Control.Concurrent (forkIO)
-import           Control.Monad      (forever, unless, void, when)
+import           Control.Monad      (forever, unless, void)
 
 import           Data.Aeson         (decode)
 import           Data.IORef
@@ -24,37 +24,15 @@ import qualified Data.Map           as M
 import qualified Data.Text          as T
 import qualified Data.Time          as Tm
 
-import           System.Directory   (doesFileExist, getCurrentDirectory)
-import           System.FilePath
-import           System.IO.Error    (catchIOError)
 import           System.IO.Unsafe
-import           System.Posix
 
 import           Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
 
 coinRefs ∷ IORef (M.Map String ((Float, Float, Float), Tm.LocalTime))
 coinRefs = unsafePerformIO $ newIORef M.empty
 
-writeToPipe ∷ FilePath -> String -> IO ()
-writeToPipe pipePath contents = do
-  pipeExists <- doesFileExist pipePath
-  unless pipeExists $ createNamedPipe pipePath 0o666
-
-  pipeFd <- catchIOError (openFd pipePath (WriteOnly) (defaultFileFlags { nonBlock = pipeExists }))
-            handleOpenError
-  result <- fdWrite pipeFd contents
-  when (result < 0) $ putStrLn $ "Error writing to pipe " ++ pipePath
-
-  closeFd pipeFd
-
-handleOpenError ∷ IOError -> IO Fd
-handleOpenError e = do
-  putStrLn $ "Error opening pipe: " ++ show e
-  error "Could not open pipe"
-
 ws ∷ ClientApp ()
 ws connection = do
-  cwd <- getCurrentDirectory
 
   tickerUSDTs <- extractTickerUSDTs
   writeIORef coinRefs
@@ -91,12 +69,13 @@ ws connection = do
                 let sign = if coinNow > coinWas
                             then "+"
                             else "-"
-                writeFile (cwd </> "conky" </> ss) $ sign ++ coinNowS
+
+                raw "hodl" [ss, sign ++ coinNowS]
                 let cGraph =
                       if newmax > newmin
                         then (coinNow - newmin) / (newmax - newmin) * 100
                         else 50.0
-                writeFile (cwd </> "conky" </> (ss ++ "_GRAPH")) $ show cGraph
+                raw "hodl" [(ss ++ "_GRAPH"), show cGraph]
               Nothing  -> pass
           Nothing      -> pass
       Nothing -> pass

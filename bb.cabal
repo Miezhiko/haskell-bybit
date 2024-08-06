@@ -1,5 +1,5 @@
 name:           bb
-version:        0.0.1.8
+version:        0.0.1.9
 category:       Finance
 author:         Miezhiko
 license:        GPLv3
@@ -51,7 +51,7 @@ executable bb
     , vty-crossplatform
     , lens
     , time
-    , unix
+    , process
   default-language: Haskell2010
   ghc-options:
     -Wall -threaded -rtsopts -with-rtsopts=-N
