@@ -16,9 +16,11 @@ pass = pure ()
 extractValues ∷ OrderData -> Maybe (T.Text, T.Text)
 extractValues (OrderData _ myData) =
   let bList = b myData
-  in if null bList
-     then Nothing
-     else Just (s myData, head (head bList))
+  in case bList of
+    []    -> Nothing
+    (x:_) -> case x of
+              []    -> Nothing
+              (y:_) -> Just (s myData, y)
 
 zerotime ∷ Tm.LocalTime
 zerotime = Tml.utcToLocalTime Tml.utc (Clc.UTCTime (Tm.fromGregorian 1 1 1) 0)
