@@ -3,13 +3,13 @@
 Brick TUI to BYBIT derivatives API on wuss (secure WebSocket)
 -------------------------------------------------------------
 
- - put `bb.yml` file in your workdir
+ - put `bybit.yml` file in your workdir
  - press ESC or `q` to exit
  - setup needed tickers to track on `ticker.json` [this docs](https://bybit-exchange.github.io/docs/v5/ws/connect)
  - (actually yml is not used for now, work in progress thing)
  - using [hodl](https://github.com/Miezhiko/hodl/tree/mawa) for storing conky values
 
-`bb.yml` file example:
+`bybit.yml` file example:
 
 ```yml
 cfgKey: yourBBpublikKey

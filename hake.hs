@@ -14,26 +14,26 @@ main = hake $ do
   "build deps | install all the dependencies" ∫
     cabal ["install", "--only-dependencies", "--overwrite-policy=always"]
 
-  bbExecutable ♯
+  bybitExecutable ♯
    let processBuild =
            cabalConfigure
         >> cabalBuild
         >> getCabalBuildPath appName >>=
-            \p -> copyFile p bbExecutable
+            \p -> copyFile p bybitExecutable
     in processBuild ?> cleanCabalLocal
 
-  "install | install to system" ◉ [bbExecutable] ∰
+  "install | install to system" ◉ [bybitExecutable] ∰
     cabal ["install", "--overwrite-policy=always"]
 
  where
   appName ∷ String
-  appName = "bb"
+  appName = "bybit"
 
   buildPath ∷ String
   buildPath = "dist-newstyle"
 
-  bbExecutable ∷ String
-  bbExecutable =
+  bybitExecutable ∷ String
+  bybitExecutable =
     {- HLINT ignore "Redundant multi-way if" -}
     if | os ∈ ["win32", "mingw32", "cygwin32"] -> buildPath </> appName ++ "exe"
        | otherwise                             -> buildPath </> appName

@@ -26,4 +26,4 @@ data Conf
   deriving anyclass (FromJSON, ToJSON)
 
 getCfg ∷ IO Conf
-getCfg = Yaml.decodeFileThrow "bb.yml"
+getCfg = Yaml.decodeFileThrow "bybit.yml"
