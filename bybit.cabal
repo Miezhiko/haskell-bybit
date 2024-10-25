@@ -2,7 +2,7 @@ name:           bybit
 version:        0.0.3.0
 category:       Finance
 author:         Miezhiko
-license:        GPLv3
+license:        QUADROBER
 build-type:     Simple
 cabal-version:  2.0
 
