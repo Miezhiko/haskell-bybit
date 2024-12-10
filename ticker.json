@@ -3,10 +3,10 @@
   "op": "subscribe",
   "args": [
       "orderbook.1.BTCUSDT",
-      "orderbook.1.ETHUSDT",
+      "orderbook.1.SUIUSDT",
       "orderbook.1.SOLUSDT",
       "orderbook.1.ADAUSDT",
-      "orderbook.1.DOTUSDT",
+      "orderbook.1.MOODENGUSDT",
       "orderbook.1.TONUSDT",
       "orderbook.1.WIFUSDT"
   ]

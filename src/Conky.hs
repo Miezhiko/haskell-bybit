@@ -28,16 +28,26 @@ import           System.IO.Unsafe
 
 import           Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
 
-coinRefs ∷ IORef (M.Map String ((Float, Float, Float), Tm.LocalTime))
+type CoinName = String
+
+data CoinData
+  = CoinData
+      { price     :: (Float, Float, Float)
+      , timestamp :: Tm.LocalTime
+      }
+  deriving (Eq, Show)
+
+coinRefs ∷ IORef (M.Map CoinName CoinData)
 coinRefs = unsafePerformIO $ newIORef M.empty
 
 ws ∷ ClientApp ()
 ws connection = do
 
   tickerUSDTs <- extractTickerUSDTs
+
   writeIORef coinRefs
     (M.fromList $ map (\x ->
-      (x, ((0.0, 666666666.0, 0.0), zerotime))) tickerUSDTs
+      (x, CoinData (0.0, 666666666.0, 0.0) zerotime)) tickerUSDTs
     )
 
   void ∘ forkIO ∘ forever $ do
@@ -51,7 +61,7 @@ ws connection = do
             newTime   <- getTime
             mcoinRefs <- readIORef coinRefs
             case M.lookup ss mcoinRefs of
-              Just ((coinWas, cMin, cMax), lastDiffTime) -> do
+              Just (CoinData (coinWas, cMin, cMax) lastDiffTime) -> do
                 let tDiff    = Tm.diffLocalTime newTime lastDiffTime
                     tDiffSec = (round $ Tm.nominalDiffTimeToSeconds tDiff) :: Integer
                     coinNowS = T.unpack p
@@ -65,7 +75,8 @@ ws connection = do
                     newmax = if coinNow > cMax
                                   then coinNow
                                   else cMax
-                writeIORef coinRefs $ M.insert ss ((newNow, newmin, newmax), newTime) mcoinRefs
+                writeIORef coinRefs $
+                  M.insert ss (CoinData (newNow, newmin, newmax) newTime) mcoinRefs
                 let sign = if coinNow > coinWas
                             then "+"
                             else "-"
